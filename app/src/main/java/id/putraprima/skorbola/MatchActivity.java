@@ -3,7 +3,6 @@ package id.putraprima.skorbola;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -11,86 +10,124 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class MatchActivity extends AppCompatActivity {
+import de.hdodenhof.circleimageview.CircleImageView;
 
-    private String hometeam;
-    private String awayteam;
-    private String winner;
-    private int homescore;
-    private int awayscore;
-    private TextView scoreHome;
-    private TextView scoreAway;
-    private TextView homeText;
-    private TextView awayText;
-    private ImageView homeLogo;
-    private ImageView awayLogo;
-    private Button addHome;
-    private Button addAway;
-    private Button cekResult;
+public class MatchActivity extends AppCompatActivity {
+    private TextView skorhome;
+    private TextView skoraway;
+    private TextView home;
+    private TextView away;
+    private Button satuhome, duahome, tigahome, satuaway, duaaway, tigaaway, result, reset;
+    private CircleImageView logohome, logoaway;
+    private int homescore, awayscore;
+    private String win, a, b;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_match);
-        homeText = findViewById(R.id.txt_home);
-        awayText = findViewById(R.id.txt_away);
-        scoreHome = findViewById(R.id.score_home);
-        scoreAway = findViewById(R.id.score_away);
-        homeLogo = findViewById(R.id.home_logo);
-        awayLogo = findViewById(R.id.away_logo);
-        addHome = findViewById(R.id.btn_add_home);
-        addAway = findViewById(R.id.btn_add_away);
-        cekResult = findViewById(R.id.btn_result);
+
+        skorhome = findViewById(R.id.score_home);
+        skoraway = findViewById(R.id.score_away);
+        home = findViewById(R.id.txt_home);
+        away = findViewById(R.id.txt_away);
+        logohome = findViewById(R.id.home_logo);
+        logoaway = findViewById(R.id.away_logo);
+        satuhome = findViewById(R.id.satu);
+        duahome = findViewById(R.id.dua);
+        tigahome = findViewById(R.id.tiga);
+        satuaway = findViewById(R.id.satuu);
+        duaaway = findViewById(R.id.duaa);
+        tigaaway = findViewById(R.id.tigaa);
+        result = findViewById(R.id.hasil);
+        reset = findViewById(R.id.reset);
 
         homescore = 0;
         awayscore = 0;
-        scoreHome.setText(String.valueOf(homescore));
-        scoreAway.setText(String.valueOf(awayscore));
+        skorhome.setText(String.valueOf(homescore));
+        skoraway.setText(String.valueOf(awayscore));
 
         Bundle bundle = getIntent().getExtras();
-        hometeam = bundle.getString("namahome");
-        homeText.setText(hometeam);
-        awayteam = bundle.getString("namaaway");
-        awayText.setText(awayteam);
-        homeLogo.setImageURI(Uri.parse(bundle.getString("homeImg")));
-        awayLogo.setImageURI(Uri.parse(bundle.getString("awayImg")));
+        a = bundle.getString("home");
+        home.setText(a);
+        b = bundle.getString("away");
+        away.setText(b);
+        logohome.setImageURI(Uri.parse(bundle.getString("homeimg")));
+        logoaway.setImageURI(Uri.parse(bundle.getString("awayimg")));
 
-        addHome.setOnClickListener(new View.OnClickListener() {
+        satuhome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 homescore += 1;
-                scoreHome.setText(String.valueOf(homescore));
+                skorhome.setText(String.valueOf(homescore));
             }
         });
-
-        addAway.setOnClickListener(new View.OnClickListener() {
+        duahome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                homescore += 2;
+                skorhome.setText(String.valueOf(homescore));
+            }
+        });
+        tigahome.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                homescore += 3;
+                skorhome.setText(String.valueOf(homescore));
+            }
+        });
+        satuaway.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 awayscore += 1;
-                scoreAway.setText(String.valueOf(awayscore));
+                skoraway.setText(String.valueOf(awayscore));
+            }
+        });
+        duaaway.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                awayscore += 2;
+                skoraway.setText(String.valueOf(awayscore));
+            }
+        });
+        tigaaway.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                awayscore += 3;
+                skoraway.setText(String.valueOf(awayscore));
             }
         });
 
-        cekResult.setOnClickListener(new View.OnClickListener() {
+        reset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                winner = "empty";
+                awayscore = 0;
+                homescore = 0;
+                skorhome.setText(String.valueOf(homescore));
+                skoraway.setText(String.valueOf(awayscore));
+            }
+        });
+
+        result.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                win = "empty";
                 if(homescore > awayscore){
-                    winner = hometeam;
+                    win = "Pemenangnya Adalah " + a;
                 }
                 else if (homescore == awayscore){
-                    winner = "draw";
+                    win = "Draw!";
                 }
                 else {
-                    winner = awayteam;
+                    win = "Pemenangnya Adalah " + b;
                 }
 
                 Intent intent = new Intent(MatchActivity.this, ResultActivity.class);
-                intent.putExtra("winner", winner);
+                intent.putExtra("winner", win);
                 startActivity(intent);
             }
         });
-
 
         //TODO
         //1.Menampilkan detail match sesuai data dari main activity

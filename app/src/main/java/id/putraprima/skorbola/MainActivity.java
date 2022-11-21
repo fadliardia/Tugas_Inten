@@ -3,12 +3,12 @@ package id.putraprima.skorbola;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.service.autofill.FieldClassification;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -18,61 +18,25 @@ import android.widget.Toast;
 
 import java.io.IOException;
 
-public class MainActivity extends AppCompatActivity {
+import de.hdodenhof.circleimageview.CircleImageView;
 
+public class MainActivity extends AppCompatActivity {
+    private static final String TAG = MainActivity.class.getCanonicalName();
     private static final int HOME_REQUEST_CODE = 1;
     private static final int AWAY_REQUEST_CODE = 2;
-    private static final String TAG = MainActivity.class.getCanonicalName();
-
-    private String hometeam;
-    private String awayteam;
-    private EditText homeTeamInput;
-    private EditText awayTeamInput;
-    private ImageView homeLogo;
-    private ImageView awayLogo;
-    private Button buttonTeam;
-    private Uri homeImg;
-    private  Uri awayImg;
+    private CircleImageView home, away;
+    private EditText homeInput,awayInput;
+    private Button click;
+    private Uri logohome;
+    private  Uri logoaway;
+    private boolean change_img_home = false;
+    private boolean change_img_away = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        homeTeamInput = findViewById(R.id.home_team);
-        awayTeamInput = findViewById(R.id.away_team);
-        homeLogo = findViewById(R.id.home_logo);
-        awayLogo = findViewById(R.id.away_logo);
-        buttonTeam = findViewById(R.id.btn_team);
-
-        buttonTeam.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //intent
-                hometeam = homeTeamInput.getText().toString();
-                awayteam = awayTeamInput.getText().toString();
-                Intent intent = new Intent(MainActivity.this, MatchActivity.class);
-                intent.putExtra("namahome", hometeam);
-                intent.putExtra("namaaway", awayteam);
-                intent.putExtra("homeImg", homeImg.toString());
-                intent.putExtra("awayImg", awayImg.toString());
-                startActivity(intent);
-            }
-        });
-
-        homeLogo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI), HOME_REQUEST_CODE);
-            }
-        });
-
-        awayLogo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI), AWAY_REQUEST_CODE);
-            }
-        });
 
         //TODO
         //Fitur Main Activity
@@ -81,42 +45,91 @@ public class MainActivity extends AppCompatActivity {
         //3. Ganti Logo Home Team
         //4. Ganti Logo Away Team
         //5. Next Button Pindah Ke MatchActivity
+
+        home = findViewById(R.id.home_logo);
+        away = findViewById(R.id.away_logo);
+        homeInput = findViewById(R.id.home_team);
+        awayInput = findViewById(R.id.away_team);
+        click = findViewById(R.id.btn_team);
+
+        click.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (homeInput.getText().toString().isEmpty()){
+                    homeInput.setError("Home Team is empty!");
+                } else if (awayInput.getText().toString().isEmpty()){
+                    awayInput.setError("Away Team is empty!");
+                } else  if (!change_img_home){
+                    Toast.makeText(MainActivity.this, "Image " + homeInput.getText().toString() + " must be change", Toast.LENGTH_SHORT).show();
+                } else  if (!change_img_away){
+                    Toast.makeText(MainActivity.this, "Image " + awayInput.getText().toString() + " must be change", Toast.LENGTH_SHORT).show();
+                } else {
+
+                    Intent pindah = new Intent(MainActivity.this, MatchActivity.class);
+                    pindah.putExtra("home", homeInput.getText().toString());
+                    pindah.putExtra("away", awayInput.getText().toString());
+                    pindah.putExtra("homeimg", logohome.toString());
+                    pindah.putExtra("awayimg", logoaway.toString());
+                    startActivity(pindah);
+                }
+            }
+        });
+
+
+
+        home.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI), HOME_REQUEST_CODE);
+            }
+        });
+
+        away.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivityForResult(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI), AWAY_REQUEST_CODE);
+            }
+        });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == RESULT_CANCELED){
-            Log.d(TAG, "Pilih gambar dicancel");
+        if (resultCode == RESULT_CANCELED){
+            Log.d(TAG, "Dicancel");
             return;
         }
-        else if(requestCode == HOME_REQUEST_CODE){
+        else if (requestCode == HOME_REQUEST_CODE){
             if(data != null){
                 try {
+                    change_img_home = true;
                     Uri imageUri = data.getData();
-                    homeImg = imageUri;
+                    logohome = imageUri;
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                    homeLogo.setImageBitmap(bitmap);
+                    home.setImageBitmap(bitmap);
                 }
                 catch (IOException error){
-                    Toast.makeText(this, "Can't load image", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "cant load image", Toast.LENGTH_SHORT).show();
                     Log.e(TAG, error.getMessage());
                 }
             }
+
         }
-        else if(requestCode == AWAY_REQUEST_CODE){
-            if(data != null){
+        else if (requestCode == AWAY_REQUEST_CODE){
+            if(data != null) {
                 try {
+                    change_img_away = true;
                     Uri imageUri = data.getData();
-                    awayImg = imageUri;
+                    logoaway = imageUri;
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                    awayLogo.setImageBitmap(bitmap);
-                }
-                catch (IOException error){
-                    Toast.makeText(this, "Can't load image", Toast.LENGTH_SHORT).show();
+                    away.setImageBitmap(bitmap);
+                } catch (IOException error) {
+                    Toast.makeText(this, "cant load image", Toast.LENGTH_SHORT).show();
                     Log.e(TAG, error.getMessage());
                 }
             }
         }
     }
+
 }
